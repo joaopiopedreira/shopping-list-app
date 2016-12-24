@@ -16,7 +16,7 @@ import {
 
 export default class AwesomeProject extends Component {
     _onPressButton() {
-        console.log("You tapped the button!");
+        console.log("You clicked the button!");
     }
 
     render() {
