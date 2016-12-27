@@ -6,73 +6,117 @@
 
 import React, {Component} from 'react';
 import {
+    AsyncStorage,
     AppRegistry,
+    StyleSheet,
     ListView,
     Text,
-    View,
     TextInput,
-    StyleSheet
+    TouchableWithoutFeedback,
+    ScrollView,
+    View
 } from 'react-native';
 
 class AwesomeProject extends Component {
     // Initialize the hardcoded data
     constructor(props) {
         super(props);
-        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-        const shoppingList = ['Arroz', 'Atum', 'Ovos', 'Yogurtes', 'Laranjas', 'Limões', 'Pão', 'Azeite'];
+        const itemsDS = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        const items = [];
+        this.getStorage().then((items) => this.setItems(items));
         this.state = {
-            shoppingList:shoppingList,
-            dataSource: ds.cloneWithRows(shoppingList),
-            text: 'click to add new item'
+            items:items,
+            itemsDS: itemsDS.cloneWithRows(items),
+            text: ''
         };
     }
-    render() {
+
+    onChange (event) {
+        console.log(event.nativeEvent.text);
+        this.setState({text: event.nativeEvent.text});
+    }
+
+    onPress () {
+        if (this.state.text) {
+            this.state.items.push(this.state.text);
+            this.setItems(this.state.items);
+            this.setState({text: ''});
+            this.updateStorage();
+        }
+    }
+
+    getStorage () {
+        return AsyncStorage
+            .getItem('items')
+            .then((items) => JSON.parse(items));
+    }
+
+    updateStorage () {
+        return AsyncStorage.setItem('items', JSON.stringify(this.state.items));
+    }
+
+    setItems (items) {
+        if(items) {
+            const itemsDS = this.state.itemsDS.cloneWithRows(items);
+            this.setState({items, itemsDS});
+        }
+    }
+
+    render () {
         return (
-            <View style={styles.container}>
-                <Text style={styles.title}>
-                    Shopping List
-                </Text>
-                <ListView style={styles.listView}
-                    dataSource={this.state.dataSource}
-                    renderRow={(rowData) => <Text style={styles.rowData}>{rowData}</Text>}
-                />
+            <ScrollView>
                 <TextInput
-                    style={{height: 20}}
-                    onChangeText={(text) => this.setState({
-                        shoppingList: this.state.shoppingList.push(text),
-                        dataSource: this.state.dataSource.cloneWithRows(this.state.shoppingList)
-                    })}
+                    style={styles.input}
+                    onChange={this.onChange.bind(this)}
                     value={this.state.text}
-                    defaltValue='click to add new item'
-                >
-                </TextInput>
-            </View>
+                />
+                <TouchableWithoutFeedback onPress={this.onPress.bind(this)}>
+                    <View style={styles.submit}>
+                        <Text>Add entry</Text>
+                    </View>
+                </TouchableWithoutFeedback>
+                <ListView
+                    enableEmptySections={true}
+                    style={styles.list}
+                    dataSource={this.state.itemsDS}
+                    renderRow={(rowData) => <Text>{rowData}</Text>}
+                />
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingTop: 22,
-        paddingLeft:5,
-        justifyContent: 'center',
-        alignItems: 'flex-start',
+    list: {
+        flex: 5,
+        paddingBottom: 25,
+        paddingRight: 25,
+        paddingLeft: 25,
+        marginBottom: 10,
         backgroundColor: '#F5FCFF'
     },
-    title: {
-        alignItems: 'center',
-        color:'black',
-        fontWeight:'bold'
+    input: {
+        flex: 1,
+        marginTop:40,
+        height: 10,
+        marginRight: 20,
+        marginLeft: 20,
+        padding: 5,
+        borderWidth: 1,
+        borderColor: '#333',
+        fontSize: 20
     },
-    listView: {
-        flex:1
+    submit: {
+        flex: 1,
+        height: 10,
+        alignSelf: 'center',
+        margin: 20,
+        padding: 5,
+        backgroundColor: 'red',
+        borderWidth: 1,
+        borderColor: '#333',
+        borderRadius: 10
     },
-    rowData: {
-        flex:1,
-        color:'red',
-        padding:2
-    }
 });
 
 // App registration and rendering
