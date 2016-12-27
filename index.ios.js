@@ -7,42 +7,46 @@
 import React, {Component} from 'react';
 import {
     AppRegistry,
-    StyleSheet,
+    ListView,
     Text,
     View,
-    TouchableHighlight,
-    MapView
+    TextInput,
+    StyleSheet
 } from 'react-native';
 
-export default class AwesomeProject extends Component {
-    _onPressButton() {
-        console.log("You clicked the button!");
+class AwesomeProject extends Component {
+    // Initialize the hardcoded data
+    constructor(props) {
+        super(props);
+        const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        const shoppingList = ['Arroz', 'Atum', 'Ovos', 'Yogurtes', 'Laranjas', 'Limões', 'Pão', 'Azeite'];
+        this.state = {
+            shoppingList:shoppingList,
+            dataSource: ds.cloneWithRows(shoppingList),
+            text: 'click to add new item'
+        };
     }
-
     render() {
         return (
-        <View style={styles.container}>
-            <Text style={styles.welcome}>
-                Shopping App Awesome!
-            </Text>
-            <Text style={styles.instructions}>
-                Os dados estão lançados, em breve isto estará
-                a bombar!!
-            </Text>
-            <Text style={styles.instructions}>
-                Press Cmd+R to reload,{'\n'}
-                Cmd+D or shake for dev menu
-            </Text>
-            <TouchableHighlight style={styles.button}
-                                onPress={this._onPressButton}
-                                underlayColor={'pink'}>
-                <Text style={styles.buttonText}>Button</Text>
-            </TouchableHighlight>
-            <MapView
-                style={{height: 200, width: 200, margin: 40}}
-                showsUserLocation={true}
-            />
-        </View>
+            <View style={styles.container}>
+                <Text style={styles.title}>
+                    Shopping List
+                </Text>
+                <ListView style={styles.listView}
+                    dataSource={this.state.dataSource}
+                    renderRow={(rowData) => <Text style={styles.rowData}>{rowData}</Text>}
+                />
+                <TextInput
+                    style={{height: 20}}
+                    onChangeText={(text) => this.setState({
+                        shoppingList: this.state.shoppingList.push(text),
+                        dataSource: this.state.dataSource.cloneWithRows(this.state.shoppingList)
+                    })}
+                    value={this.state.text}
+                    defaltValue='click to add new item'
+                >
+                </TextInput>
+            </View>
         );
     }
 }
@@ -50,32 +54,26 @@ export default class AwesomeProject extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        paddingTop: 22,
+        paddingLeft:5,
         justifyContent: 'center',
+        alignItems: 'flex-start',
+        backgroundColor: '#F5FCFF'
+    },
+    title: {
         alignItems: 'center',
-        backgroundColor: '#F5FCFF',
+        color:'black',
+        fontWeight:'bold'
     },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10,
-        color: 'blue'
+    listView: {
+        flex:1
     },
-    instructions: {
-        textAlign: 'center',
-        color: '#333333',
-        marginBottom: 10,
-        marginLeft: 5,
-        marginRight: 5
-    },
-    button: {
-        backgroundColor: 'red',
-        padding: 10,
-        borderRadius: 5
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold'
+    rowData: {
+        flex:1,
+        color:'red',
+        padding:2
     }
 });
 
+// App registration and rendering
 AppRegistry.registerComponent('AwesomeProject', () => AwesomeProject);
